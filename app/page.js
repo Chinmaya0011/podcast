@@ -1,7 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import LiveStream from '@/components/LiveStream'
-
+import AgoraClient from '@/components/AgoraClient'
 const Page = () => {
   const [role, setRole] = useState('host')
 
@@ -26,7 +25,7 @@ const Page = () => {
           Join as Audience
         </button>
       </div>
-      <LiveStream channelName="test" userRole={role} />
+      <AgoraClient channelName="test" userRole={role} />
     </div>
   )
 }
