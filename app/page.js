@@ -1,8 +1,12 @@
-'use client'
-import React, { useState } from 'react'
-import AgoraClient from '@/components/AgoraClient'
+'use client';
+import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import AgoraClient to avoid SSR issues
+const AgoraClient = dynamic(() => import('@/components/AgoraClient'), { ssr: false });
+
 const Page = () => {
-  const [role, setRole] = useState('host')
+  const [role, setRole] = useState('host');
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
@@ -27,7 +31,7 @@ const Page = () => {
       </div>
       <AgoraClient channelName="test" userRole={role} />
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;
