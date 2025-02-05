@@ -17,7 +17,7 @@ const AgoraClient = ({ channelName, userRole }) => {
   const [isVideoVisible, setIsVideoVisible] = useState(true);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
 
-  const apiUrl = "http://localhost:3001/api/generate-token"; // Your backend token generator
+  const apiUrl = "https://backend-molr.onrender.com/api/generate-token"; // Your backend token generator
   const agoraAppId = "b29d0c64188a4498ae36dedad6737555"; // Replace with your Agora App ID
 
   useEffect(() => {
