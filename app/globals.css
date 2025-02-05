@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add this to your CSS file or Tailwind configuration */
+.audience-video {
+    width: 400px;
+    height: 400px;
+    object-fit: cover; /* Ensures the video content fits inside the container */
+    margin-top: 10px;
+    display: block; /* Ensures the video is treated as a block element */
+    margin-left: auto;
+    margin-right: auto; /* Center the video */
+  }
+  
