@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import AgoraRTC from "agora-rtc-sdk-ng";
+
+// Ensure AgoraRTC is only imported on the client side
+let AgoraRTC;
+if (typeof window !== "undefined") {
+  AgoraRTC = require("agora-rtc-sdk-ng");
+}
 
 const AgoraClient = ({ channelName, userRole }) => {
   const localVideoRef = useRef(null);
@@ -14,6 +19,10 @@ const AgoraClient = ({ channelName, userRole }) => {
 
   const apiUrl = "http://localhost:3001/api/generate-token"; // Your backend token generator
   const agoraAppId = "b29d0c64188a4498ae36dedad6737555"; // Replace with your Agora App ID
+
+  useEffect(() => {
+    if (typeof window === "undefined") return; // Ensure this only runs on the client
+  }, []);
 
   const fetchToken = async () => {
     try {
@@ -36,7 +45,7 @@ const AgoraClient = ({ channelName, userRole }) => {
       });
 
       const data = await response.json();
-      console.log("Token API Response:", data); // Debugging
+      console.log("Token API Response:", data);
 
       if (data.token) {
         setToken(data.token);
@@ -49,7 +58,7 @@ const AgoraClient = ({ channelName, userRole }) => {
   };
 
   const initAgora = async (token) => {
-    if (!agoraAppId || !channelName || !token) {
+    if (!AgoraRTC || !agoraAppId || !channelName || !token) {
       console.error("Missing required Agora credentials.");
       return;
     }
@@ -83,7 +92,7 @@ const AgoraClient = ({ channelName, userRole }) => {
               remoteVideoRefs.current[user.uid] = document.createElement("video");
               remoteVideoRefs.current[user.uid].autoplay = true;
               remoteVideoRefs.current[user.uid].playsInline = true;
-              remoteVideoRefs.current[user.uid].className = "audience-video"; // Add the class for fixed size
+              remoteVideoRefs.current[user.uid].className = "audience-video";
               document.body.appendChild(remoteVideoRefs.current[user.uid]);
             }
             remoteVideoRefs.current[user.uid].srcObject = new MediaStream([user.videoTrack.getMediaStreamTrack()]);
@@ -111,30 +120,6 @@ const AgoraClient = ({ channelName, userRole }) => {
     }
   };
 
-  const toggleVideo = () => {
-    if (localTracks.videoTrack) {
-      localTracks.videoTrack.setEnabled(!isVideoVisible);
-      setIsVideoVisible(!isVideoVisible);
-    }
-  };
-
-  const toggleAudio = () => {
-    if (localTracks.audioTrack) {
-      localTracks.audioTrack.setEnabled(!isAudioMuted);
-      setIsAudioMuted(!isAudioMuted);
-    }
-  };
-
-  const stopStreaming = async () => {
-    if (client && localTracks.audioTrack && localTracks.videoTrack) {
-      await client.unpublish([localTracks.audioTrack, localTracks.videoTrack]);
-      localTracks.audioTrack.close();
-      localTracks.videoTrack.close();
-      setLocalTracks({ audioTrack: null, videoTrack: null });
-      setIsStreaming(false);
-    }
-  };
-
   useEffect(() => {
     if (token) {
       initAgora(token);
@@ -155,19 +140,27 @@ const AgoraClient = ({ channelName, userRole }) => {
             />
             <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2 flex justify-center space-x-4">
               <button
-                onClick={toggleVideo}
+                onClick={() => setIsVideoVisible(!isVideoVisible)}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 {isVideoVisible ? "Hide Video" : "Show Video"}
               </button>
               <button
-                onClick={toggleAudio}
+                onClick={() => setIsAudioMuted(!isAudioMuted)}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 {isAudioMuted ? "Unmute Audio" : "Mute Audio"}
               </button>
               <button
-                onClick={stopStreaming}
+                onClick={async () => {
+                  if (client && localTracks.audioTrack && localTracks.videoTrack) {
+                    await client.unpublish([localTracks.audioTrack, localTracks.videoTrack]);
+                    localTracks.audioTrack.close();
+                    localTracks.videoTrack.close();
+                    setLocalTracks({ audioTrack: null, videoTrack: null });
+                    setIsStreaming(false);
+                  }
+                }}
                 className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
               >
                 Stop Streaming
@@ -196,7 +189,7 @@ const AgoraClient = ({ channelName, userRole }) => {
                     }}
                     autoPlay
                     playsInline
-                    className="audience-video" // Apply the fixed size class for audience video
+                    className="audience-video"
                   />
                 </div>
               ))}
